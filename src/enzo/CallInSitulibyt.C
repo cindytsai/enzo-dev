@@ -43,6 +43,7 @@ int ExposeHierarchyToLibyt(TopGridData *MetaData, HierarchyEntry *Grid, int
 void ExposeGridHierarchy(int NumberOfGrids);
 void ExportParameterFile(TopGridData *MetaData, FLOAT CurrentTime, FLOAT OldTime, float dtFixed);
 void CommunicationBarrier();
+class ActiveParticleType_SmartStar;
 
 #endif
 
