@@ -174,10 +174,28 @@ int CallInSitulibyt(LevelHierarchyEntry *LevelArray[], TopGridData *MetaData,
 
     params->num_fields += 2; // TODO: BH: add fields for Temperature/Cooling_Time derived field from enzo
 
-    params->num_par_types = 1;
-    yt_par_type par_type_list[1];
-    par_type_list[0].par_type = "io";
+    // TODO: PARTICLE need to add other ptypes (Active Ptype)
+    params->num_par_types = 1 + EnabledActiveParticlesCount; // DarkMatter and Other ActiveParticle (ex: SmartStar)
+    yt_par_type *par_type_list = new yt_par_type [params->num_par_types];
+
+    par_type_list[0].par_type = "DarkMatter";
     par_type_list[0].num_attr = 3 + 3 + 1 + 1 + 1 + NumberOfParticleAttributes;
+
+    for (int i = 0; i < EnabledActiveParticlesCount; i++) {
+        ActiveParticleType_info *ActiveParticleTypeToEvaluate = EnabledActiveParticles[i];
+
+        // active particle type
+        par_type_list[1 + i].par_type = ActiveParticleTypeToEvaluate->particle_name.c_str();
+
+        // count number of attributes
+        int num_attr = 0;
+        AttributeVector &handlers = ActiveParticleTypeToEvaluate->particle_instance->AttributeHandlers;
+        for (AttributeVector::iterator it = handlers.begin(); it != handlers.end(); ++it) {
+            num_attr = num_attr + 1;
+        }
+        par_type_list[1 + i].num_attr = num_attr;
+    }
+
     params->par_type_list = par_type_list;
 
     if (yt_set_Parameters(params) != YT_SUCCESS){
@@ -185,12 +203,13 @@ int CallInSitulibyt(LevelHierarchyEntry *LevelArray[], TopGridData *MetaData,
         return FAIL;
     }
 
+    delete [] par_type_list;
+
     yt_particle *particle_list;
     yt_get_ParticlesPtr(&particle_list);
 
-    // Particle type "io", each particle has position in the center of the grid it belongs to with value grid level.
-    // par_type and num_attr will be assigned by libyt with the same value we passed in par_type_list at yt_set_Parameters.
-    particle_list[0].par_type = "io";
+    // TODO: make sure enzo's particle is always DarkMatter
+    particle_list[0].par_type = "DarkMatter";
 
     // We have the attributes: 3 positions, 3 velocities, "mass", ID and Type
     // and extras.
@@ -229,6 +248,20 @@ int CallInSitulibyt(LevelHierarchyEntry *LevelArray[], TopGridData *MetaData,
     particle_list[0].coor_x = attr_name[0];
     particle_list[0].coor_y = attr_name[1];
     particle_list[0].coor_z = attr_name[2];
+
+    for (int i = 0; i < EnabledActiveParticlesCount; i++) {
+        ActiveParticleType_info *ActiveParticleTypeToEvaluate = EnabledActiveParticles[i];
+
+        // list all attributes one-by-one
+        int v = 0;
+        AttributeVector &handlers = ActiveParticleTypeToEvaluate->particle_instance->AttributeHandlers;
+        for (AttributeVector::iterator it = handlers.begin(); it != handlers.end(); ++it) {
+            particle_list[1 + i].attr_list[v].attr_name = ((*it)->name).c_str();
+            v = v + 1;
+        }
+
+        // TODO: list attributes data type and Coor_X/Y/Z
+    }
 
     /* Set code-specific parameter */
     char tempname[256];
