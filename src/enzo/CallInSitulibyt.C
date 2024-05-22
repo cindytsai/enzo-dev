@@ -189,7 +189,8 @@ int CallInSitulibyt(LevelHierarchyEntry *LevelArray[], TopGridData *MetaData,
 
         // count number of attributes
         int num_attr = 0;
-        AttributeVector &handlers = ActiveParticleTypeToEvaluate->particle_instance->AttributeHandlers;
+//        AttributeVector &handlers = ActiveParticleTypeToEvaluate->particle_instance->AttributeHandlers; // TODO: this is wrong, need subclass's AttributeHandlers
+        AttributeVector &handlers = ActiveParticleType_SmartStar::AttributeHandlers; // TODO: assume this for testing purpose.
         for (AttributeVector::iterator it = handlers.begin(); it != handlers.end(); ++it) {
             num_attr = num_attr + 1;
         }
@@ -254,7 +255,8 @@ int CallInSitulibyt(LevelHierarchyEntry *LevelArray[], TopGridData *MetaData,
 
         // list all attributes one-by-one
         int v = 0;
-        AttributeVector &handlers = ActiveParticleTypeToEvaluate->particle_instance->AttributeHandlers;
+//        AttributeVector &handlers = ActiveParticleTypeToEvaluate->particle_instance->AttributeHandlers; // TODO: this is wrong, need subclass's AttributeHandlers
+        AttributeVector &handlers = ActiveParticleType_SmartStar::AttributeHandlers; // TODO: assume this for testing purpose.
         for (AttributeVector::iterator it = handlers.begin(); it != handlers.end(); ++it) {
             particle_list[1 + i].attr_list[v].attr_name = ((*it)->name).c_str();
             v = v + 1;
